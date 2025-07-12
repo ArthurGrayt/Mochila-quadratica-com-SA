@@ -1,57 +1,51 @@
-import random  # módulo 'random', que permite embaralhar listas aleatoriamente
+# import random 
+# import math   
+# import numpy as np
+# import pandas as pd
+from dotenv import load_dotenv 
+import os 
+import gspread
 
+# Carregando variavéis de arquivo .env no ambiente do sistema
+load_dotenv()
 
-def mochila(valores, pesos_itens, capacidade, ordem_itens):
-    valor_total = 0  # valor total acumulado da mochila com 0
-    peso_total = 0   # peso total acumulado da mochila com 0
-    itens_mochila = []  # lista para guardar os itens que foram escolhidos
-    for i in ordem_itens:
-        if peso_total + pesos_itens[i] <= capacidade:
-            peso_total += pesos_itens[i]  # Add o peso do item ao peso total
-            valor_total += valores[i]   # Add o valor do item ao valor total
-            itens_mochila.append(i)  # add no fim da lista itens_mochila
-    return valor_total, peso_total, itens_mochila  # retornando resultados
+# Config da Planilha
 
+PLANILHA_ID = os.getenv('PLANILHA_ID_REAL')
+ARQUIVO_CREDENCIAIS = 'credenciais.json'
 
-valores = [60, 100, 120, 80, 20]  # Lista com os valores dos itens
-pesos_itens = [40, 30, 80, 40, 50]  # Lista com os pesos dos itens
-capacidade = 120  # Capacidade máxima da mochila
+# Autenticando a planilha com o Google Sheets
 
-# Criamos uma lista de eficiência para cada item,
-# onde: eficiência = (valor / peso)
-eficiencia_itens = [valor / peso for valor, peso in zip(valores, pesos_itens)]
+try:
+    
+    gc = gspread.service_account(filename=ARQUIVO_CREDENCIAIS)
+    print("Autentificação com Google Sheets foi um sucesso!")
 
-# Criamos uma lista com os índices dos itens
-# e ordenamos pela eficiência do maior para o menor
-indices_itens = sorted(range(len(valores)),
-                       key=lambda i: eficiencia_itens[i], reverse=True)
+except Exception as e:
+    print(f"Erro ao autenticar com Google Sheets:{e}")
+    print("Verifique se as credenciais estão na pasta correta")
+    print("e a configuração da api")
+    exit()
 
-# Teste com ordem baseada em eficiência
-valor, peso, itens = mochila(valores, pesos_itens, capacidade, indices_itens)
-print("Resultado com eficiência:")
-print("Valor total:", valor)
-print("Peso total:", peso)
-print("Itens na mochila:", itens)
-
-valor_melhor = 0  # variavel pra guardar o melhor valor até agora
-melhor_solucao = 0  # variavel pra guardar a melhor solução até agora
-tentativas = 1000  # vezes que vamos tentar solucionar
-
-# Loop para tentar 1000 vezes
-for _ in range(tentativas):
-    ordem_random = list(range(len(valores)))  # Embaralhamos os itens
-    random.shuffle(ordem_random)  # Embaralha a ordem dos itens
-    valor, peso, itens = mochila(valores, pesos_itens,
-                                 capacidade, ordem_random)
-    if valor > valor_melhor:
-        valor_melhor = valor  # se for melhor, atualiza o valor
-        melhor_solucao = (valor, peso, itens)  # atualiza a melhor solução
-
-# Mostrando a melhor solução encontrada apos as 1000 tentativas
-print("\nMelhor solução encontrada (Multistart):")
-print("Valor total:", melhor_solucao[0])
-print("Peso total:", melhor_solucao[1])
-print("Itens na mochila:")
-for item in melhor_solucao[2]:
-    print(f"Item {item}: Valor = {valores[item]}, Peso = {pesos_itens[item]}")
-print("Total de itens escolhidos:", len(melhor_solucao[2]))
+if PLANILHA_ID is None:
+    print(
+        (
+            "Erro: A variável 'PLANILHA_ID_REAL' não foi "
+            "encontrada no arquivo .env "
+            "ou no ambiente."
+        )
+    )
+    print(
+        "Certifique-se que você criou o arquivo .env e definiu "
+        "PLANILHA_ID_REAL=SUA_ID_DA_PLANILHA_AQUI."
+    )
+    exit()
+    
+try:
+    planilha = gc.open_by_key(PLANILHA_ID)
+    
+    print(f"Planilha '{planilha.title}'aberta com sucesso!")
+except Exception as e:
+    print(f"Erro ao abrir a planilha: {e}")
+    print("Verifique se o ID da planilha está correto")
+    
