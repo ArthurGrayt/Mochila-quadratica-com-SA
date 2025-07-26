@@ -127,3 +127,55 @@ print(matriz_interacao_np)
 
 # --- FIM DA CARGA DE DADOS. O PRÓXIMO PASSO SERÁ A FUNÇÃO DE CÁLCULO --
 
+
+def avaliar_solucao(solucao):
+    # variavel pra acumulador do valor total da solução
+    # como se fosse um medidor de popularidade iniciado em 0
+    valorTotal = 0.0
+    
+    # variavel para o peso total da solução
+    #  como se fosse um contador de gastos
+    pesoTotal = 0.0
+    
+    # pega o numero de itens da solução
+    # qtde de itens disponiveis para escolher
+    numItens = len(solucao)
+
+    #  iterando sobre cada item disponivel
+    for each in range(numItens):
+        
+        # verifica se o item "each" está incluído na solução atual
+        if solucao[each] == 1:
+            
+            # se o item tiver na mochila
+            # add sua popularidade individual 
+            # (que tá no array 'popularidade_np')
+            # ao valorTotal
+            
+            valorTotal += popularidade_np[each]
+            
+            # e add o custo(está no 'custos_np') ao pesoTotal
+            pesoTotal += custos_np[each]
+            
+    # Cálculo da parte quadrática(interações)
+    # dois loops para percorrer todos os pares de itens
+    # loop i e j 
+    
+    # Primeiro loop 
+    for i in range(numItens):
+        
+        # item pode interagir com outros se tiver na mochila
+        if solucao[i] == 1:
+            for j in range(i + 1, numItens):
+                # se j tbm está  entao i e j existem como par
+                if solucao[j] == 1:
+                    # se ambos tem,adiciona o valor de interação
+                    valorTotal += matriz_interacao_np[i][j]
+            
+    if pesoTotal > orcamento_restaurante:
+        # se o peso for maior que o orçamento,é inviavel
+        return - float('inf')
+    else:
+        # se for valida o peso ta dentro do orçamento
+        return valorTotal    
+    
