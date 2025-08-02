@@ -1,84 +1,66 @@
 """
-🎒 Mochila Quadrática com Simulated Annealing
+Mochila Quadrática com Simulated Annealing
 Otimização inteligente de inventário usando operador Add/Remove
 """
 
 import random
 import math
 import numpy as np
-import gspread
-from dotenv import load_dotenv
+import pandas as pd
 import os
 
-load_dotenv()
+# Nome do arquivo Excel local
+ARQUIVO_EXCEL = 'Base de Dados.xlsx'
 
-# Configuração da conexão com Google Sheets
-PLANILHA_ID = os.getenv('PLANILHA_ID_REAL')
-ARQUIVO_CREDENCIAS = 'credencias.json'
-
-print("🔧 Configurando acesso aos dados...")
+print("🔧 Carregando dados do arquivo local...")
 print("=" * 50)
 
-# Conectando ao Google Sheets
-try:
-    gc = gspread.service_account(filename=ARQUIVO_CREDENCIAS)
-    print("✅ Conectado ao Google Sheets com sucesso!")
-except Exception as e:
-    print(f"❌ Ops! Erro ao conectar: {e}")
-    exit()
-
-# Abrindo nossa planilha
-if PLANILHA_ID is None:
-    print("❌ Eita! Não achei o ID da planilha no arquivo .env")
-    exit()
-
-try:
-    planilha = gc.open_by_key(PLANILHA_ID)
-    print(f"✅ Planilha '{planilha.title}' aberta!")
-except Exception as e:
-    print(f"❌ Problema ao abrir a planilha: {e}")
+# Verificando se o arquivo existe
+if not os.path.exists(ARQUIVO_EXCEL):
+    print(f"❌ Ops! Não consegui encontrar o arquivo '{ARQUIVO_EXCEL}' no diretório atual")
+    print("💡 Certifique-se de que o arquivo está na mesma pasta do código!")
     exit()
 
 # Carregando os itens do restaurante
 try:
-    aba_itens = planilha.worksheet('itens')
-    print("✅ Dados dos itens encontrados!")
-
-    registros_itens = aba_itens.get_all_records()
-    print(f"📊 Carregamos {len(registros_itens)} itens do estoque.")
+    print(f"📂 Abrindo arquivo '{ARQUIVO_EXCEL}'...")
+    
+    # Lendo a aba de itens
+    df_itens = pd.read_excel(ARQUIVO_EXCEL, sheet_name='itens')
+    print("✅ Dados dos itens carregados!")
+    print(f"📊 Encontramos {len(df_itens)} itens no estoque.")
 
     itens_comida = []
-    custos_np = np.array([float(record['Custo (R$)']) 
-                          for record in registros_itens])
-    popularidade_np = np.array([float(record['Popularidade']) 
-                                for record in registros_itens])
+    custos_np = np.array(df_itens['Custo (R$)'].astype(float))
+    popularidade_np = np.array(df_itens['Popularidade'].astype(float))
 
-    for record in registros_itens:
+    for _, row in df_itens.iterrows():
         itens_comida.append({
-            "nome": record['Nome'],
-            "custo": float(record['Custo (R$)']),
-            "popularidade": float(record['Popularidade'])
+            "nome": row['Nome'],
+            "custo": float(row['Custo (R$)']),
+            "popularidade": float(row['Popularidade'])
         })
-    print("✅ Dados organizados e prontos para usar!")
+    print("✅ Dados dos itens organizados e prontos!")
 
 except Exception as e:
     print(f"❌ Problema ao carregar os itens: {e}")
+    print("💡 Verifique se a aba 'itens' existe e tem as colunas: Nome, Custo (R$), Popularidade")
     exit()
 
 # Carregando as interações entre itens
 try:
-    aba_inter = planilha.worksheet('inter')
-    print("✅ Matriz de interações encontrada!")
+    # Lendo a aba de interações
+    df_inter = pd.read_excel(ARQUIVO_EXCEL, sheet_name='inter')
+    print("✅ Matriz de interações carregada!")
+    print(f"📊 Processando matriz de interações {df_inter.shape}...")
 
-    dados_inter = aba_inter.get_all_values()
-    print(f"📊 Processando {len(dados_inter)} linhas de interações...")
-
-    matriz_interacao_np = np.array([row[1:] for row in dados_inter[1:]],
-                                   dtype=float)
+    # Convertendo para numpy array (removendo a primeira coluna que geralmente são os nomes)
+    matriz_interacao_np = df_inter.iloc[:, 1:].values.astype(float)
     print("✅ Matriz de sinergias pronta para usar!")
 
 except Exception as e:
     print(f"❌ Problema ao carregar interações: {e}")
+    print("💡 Verifique se a aba 'inter' existe e contém a matriz de interações")
     exit()
 
 # Parâmetros do nosso problema (você pode ajustar aqui!)
@@ -440,7 +422,7 @@ def executar_testes():
     }
 
 
-# Aqui é onde tudo acontece!
+# função principal!
 if __name__ == "__main__":
     """🚀 Vamos colocar nosso algoritmo para trabalhar!"""
     
