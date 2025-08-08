@@ -86,18 +86,6 @@ print()
 # ===============================================================================
 
 def avaliar_solucao(solucao):
-    """
-    FUNÇÃO OBJETIVO: Avalia a qualidade de uma solução para o problema da mochila quadrática
-    
-    Maximiza: Σ(popularidade_i * x_i) + ΣΣ(sinergia_ij * x_i * x_j)
-    Sujeito a: Σ(custo_i * x_i) ≤ orçamento
-    
-    Args:
-        solucao (list): Lista binária onde 1 = item selecionado, 0 = item não selecionado
-    
-    Returns:
-        float: Valor da função objetivo (-inf se inviável)
-    """
     valor_total = 0.0
     custo_total = 0.0
     num_itens = len(solucao)
@@ -124,15 +112,7 @@ def avaliar_solucao(solucao):
 # ===============================================================================
 
 def gerar_solucao_inicial(num_itens):
-    """
-    HEURÍSTICA: Gera uma solução inicial aleatória
-    
-    Args:
-        num_itens (int): Número total de itens disponíveis
-    
-    Returns:
-        list: Solução binária inicial
-    """
+
     return [random.randint(0, 1) for _ in range(num_itens)]
 
 
@@ -181,32 +161,7 @@ def add_remove_perturbacao(solucao):
 # ===============================================================================
 
 def simulated_annealing(num_itens, temp_inicial=1000, temp_final=1, alpha=0.95, max_iteracoes=1000):
-    """
-    META-HEURÍSTICA: Simulated Annealing para Mochila Quadrática
-    
-    Implementa o algoritmo de Simulated Annealing com os seguintes componentes:
-    1. Solução inicial: gerada aleatoriamente
-    2. Função de vizinhança: operador Add/Remove 
-    3. Função de aceitação: critério de Metropolis
-    4. Esquema de resfriamento: geométrico (T = T * α)
-    
-    Parâmetros de controle:
-    - temp_inicial: Temperatura inicial (exploration vs exploitation)
-    - temp_final: Temperatura de parada  
-    - alpha: Taxa de resfriamento (0 < α < 1)
-    - max_iteracoes: Critério de parada adicional
-    
-    Args:
-        num_itens (int): Número de itens do problema
-        temp_inicial (float): Temperatura inicial do SA
-        temp_final (float): Temperatura final (critério de parada)
-        alpha (float): Taxa de resfriamento geométrico
-        max_iteracoes (int): Número máximo de iterações
-    
-    Returns:
-        tuple: (melhor_solucao, melhor_valor, historico)
-    """
-    
+
     # FASE 1: Inicialização
     solucao_atual = gerar_solucao_inicial(num_itens)  # Heurística: solução inicial
     valor_atual = avaliar_solucao(solucao_atual)      # Função objetivo
@@ -219,7 +174,7 @@ def simulated_annealing(num_itens, temp_inicial=1000, temp_final=1, alpha=0.95, 
         tentativas += 1
     
     if valor_atual == -float('inf'):
-        print("😅 Não consegui achar solução inicial válida...")
+        print(" Não consegui achar solução inicial válida...")
         return ([0] * num_itens, 0.0, {'valores': [0], 'temperaturas': [temp_inicial], 'aceitos': [], 'iteracao': 0})
     
     # Inicialização das estruturas de controle
@@ -232,7 +187,7 @@ def simulated_annealing(num_itens, temp_inicial=1000, temp_final=1, alpha=0.95, 
     
     temperatura = temp_inicial
     iteracao = 0
-    print(f"🚀 Iniciando SA - Valor inicial: {valor_atual:.2f}")
+    print(f" Iniciando SA - Valor inicial: {valor_atual:.2f}")
     
     # FASE 2: Loop principal do Simulated Annealing
     while temperatura > temp_final and iteracao < max_iteracoes:
@@ -264,7 +219,7 @@ def simulated_annealing(num_itens, temp_inicial=1000, temp_final=1, alpha=0.95, 
             if valor_atual > melhor_valor:
                 melhor_solucao = solucao_atual.copy()
                 melhor_valor = valor_atual
-                print(f"🔥 Nova melhor solução na iteração {iteracao}: {melhor_valor:.2f}")
+                print(f"Nova melhor solução na iteração {iteracao}: {melhor_valor:.2f}")
         else:
             historico['aceitos'].append(False)
             historico['rejeitados'] += 1
@@ -277,13 +232,13 @@ def simulated_annealing(num_itens, temp_inicial=1000, temp_final=1, alpha=0.95, 
         
         # 2.5: Relatório de progresso
         if iteracao % 100 == 0:
-            print(f"📈 Iteração {iteracao}: Temp={temperatura:.1f}, Atual={valor_atual:.2f}, Melhor={melhor_valor:.2f}")
+            print(f"Iteração {iteracao}: Temp={temperatura:.1f}, Atual={valor_atual:.2f}, Melhor={melhor_valor:.2f}")
     
     # FASE 3: Finalização e relatório
     historico['iteracao'] = iteracao
     taxa_aceitacao = len([x for x in historico['aceitos'] if x])/max(1,len(historico['aceitos']))*100
-    print(f"✅ SA finalizado - {iteracao} iterações, Taxa aceitação: {taxa_aceitacao:.1f}%")
-    print(f"🏆 Melhor valor encontrado: {melhor_valor:.2f} pontos")
+    print(f"SA finalizado - {iteracao} iterações, Taxa aceitação: {taxa_aceitacao:.1f}%")
+    print(f"Melhor valor encontrado: {melhor_valor:.2f} pontos")
     
     return melhor_solucao, melhor_valor, historico
 
