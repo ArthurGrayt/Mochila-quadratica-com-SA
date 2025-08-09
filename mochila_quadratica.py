@@ -117,23 +117,6 @@ def gerar_solucao_inicial(num_itens):
 
 
 def add_remove_perturbacao(solucao):
-    """
-    HEURÍSTICA: Operador de vizinhança Add/Remove inteligente
-    
-    Estratégia adaptativa:
-    - Se nenhum item selecionado → ADICIONA um item
-    - Se todos itens selecionados → REMOVE um item  
-    - Caso contrário → 50% chance de ADICIONAR ou REMOVER
-    
-    Esta heurística é mais inteligente que flip simples pois considera
-    o estado atual da solução para decidir a melhor ação.
-    
-    Args:
-        solucao (list): Solução atual
-    
-    Returns:
-        list: Nova solução vizinha
-    """
     nova_solucao = solucao.copy()
     
     itens_escolhidos = [i for i, x in enumerate(solucao) if x == 1]  # Itens já selecionados
