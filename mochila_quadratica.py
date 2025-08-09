@@ -302,4 +302,15 @@ if __name__ == "__main__":
     print(f"Taxa cobertura orcamentaria: {(orcamento_restaurante/np.sum(custos_np))*100:.1f}%")
     print(f"Densidade matriz sinergias: {(np.count_nonzero(matriz_interacao_np)/(len(itens_comida)**2))*100:.1f}%")
     
-    print(f"\nOtimizacao concluida!")
+    # Exibindo a melhor solução em formato binário
+    melhor_resultado = resultados['melhor']
+    melhor_solucao = melhor_resultado[2]  # A solução está na terceira posição da tupla
+    
+    print(f"\nMelhor solucao em formato binario:")
+    print(f"Solucao: {melhor_solucao}")
+    print(f"Valor: {melhor_resultado[0]:.2f} pontos")
+    
+    # Mostrando quais itens foram selecionados
+    itens_selecionados = [i for i, x in enumerate(melhor_solucao) if x == 1]
+    print(f"Itens selecionados: {itens_selecionados}")
+    
